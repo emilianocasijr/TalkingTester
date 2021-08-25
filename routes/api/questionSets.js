@@ -111,11 +111,11 @@ router.put(
   }
 );
 
-// @route   PUT api/questionSets/questions
+// @route   PUT api/questionSets/
 // @desc    Update current user's question sets but will delete all
 // @access  Private
 router.put(
-  '/questions',
+  '/',
   [auth, [check('questionSetID', 'Question Set ID required').not().isEmpty()]],
   async (req, res) => {
     const errors = validationResult(req);
@@ -123,11 +123,14 @@ router.put(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { questions, questionSetID } = req.body;
+    const { title, questions, questionSetID } = req.body;
 
     // Build question set
     const questionSetFields = {};
     questionSetFields.user = req.user.id;
+    if (title) {
+      questionSetFields.title = title;
+    }
     if (questions) {
       questionSetFields.questions = questions;
     }
