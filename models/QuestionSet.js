@@ -6,7 +6,11 @@ const QuestionSetSchema = new mongoose.Schema({
     required: true,
   },
   questionSetID: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
+  },
+  title: {
+    type: String,
+    required: true,
   },
   questions: [
     {
