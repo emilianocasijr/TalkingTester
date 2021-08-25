@@ -1,5 +1,0 @@
-{
-    "mongoURI": "mongodb+srv://admin:M1wiBiM!tb..@talkingtester.4jqky.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
-    "jwtSecretToken": "verysecrettokenmadebyme"
-  }
-  
