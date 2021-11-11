@@ -9,11 +9,13 @@ const { check, validationResult } = require('express-validator');
 const User = require('../../models/User');
 
 // @route   GET api/auth
-// @desc    Test route
-// @access  Public
+// @desc    Authenticate user without returning JWT token
+// @access  Private
 router.get('/', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.id)
+      .select('-password')
+      .select('-date');
     res.json(user);
   } catch (err) {
     console.error(err.message);
@@ -27,7 +29,7 @@ router.get('/', auth, async (req, res) => {
 router.post(
   '/',
   [
-    check('email', 'Please include a valid email').isEmail(),
+    check('username', 'Please include a valid username').exists(),
     check('password', 'Password is required').exists(),
   ],
   async (req, res) => {
@@ -36,11 +38,11 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
     try {
       // See if user does not exist
-      let user = await User.findOne({ email });
+      let user = await User.findOne({ username });
       if (!user) {
         return res
           .status(400)

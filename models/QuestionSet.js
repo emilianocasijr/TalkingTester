@@ -30,21 +30,9 @@ const QuestionSetSchema = new mongoose.Schema({
           },
         },
       ],
-      data: [
-        {
-          user: {
-            type: mongoose.Schema.Types.ObjectId,
-            required: true,
-          },
-          answerData: {
-            type: Number,
-            default: 0,
-          },
-        },
-      ],
     },
   ],
-  date: {
+  dateModified: {
     type: Date,
     default: Date.now,
   },

@@ -8,7 +8,7 @@ const QuestionSet = require('../../models/QuestionSet');
 
 // @route   GET api/questionSets/mine
 // @desc    Test route
-// @access  Public
+// @access  Private
 // @return  *Returns empty json if no question set found
 router.get('/mine', auth, async (req, res) => {
   try {
@@ -162,9 +162,9 @@ router.put(
   }
 );
 
-// @route   GET api/questionSets/:question_set_id
+// @route   GET api/question-sets/:question_set_id
 // @desc    Get question set with passed ID
-// @access  Public
+// @access  Private
 router.get('/:question_set_id', async (req, res) => {
   try {
     const questionSet = await QuestionSet.findOne({
