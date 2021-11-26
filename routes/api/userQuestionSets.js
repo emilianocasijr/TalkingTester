@@ -58,14 +58,17 @@ router.post(
 );
 
 // @route   PUT api/userQuestionSets/
-// @desc    Update current user's question set data
+// @desc    Update current user's question set data or create if it doesn't exist
 // @access  Private
 router.put(
   '/',
   [
     auth,
     [
-      check('userQuestionSetID', 'User Question Set ID required')
+      check('questionSetID', 'Question Set ID required')
+        .not()
+        .isEmpty(),
+      check('user', 'User ID required')
         .not()
         .isEmpty(),
     ],
@@ -76,7 +79,7 @@ router.put(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { data, userQuestionSetID } = req.body;
+    const { data, questionSetID } = req.body;
 
     // Build question set
     const userQuestionSetFields = {};
@@ -90,7 +93,8 @@ router.put(
 
     try {
       let userQuestionSetNew = await UserQuestionSet.findOne({
-        userQuestionSetID: userQuestionSetID,
+        questionSetID: questionSetID,
+        user: user,
       });
       // Check if user owns the user question set
       if (userQuestionSetNew.user != req.user.id) {
@@ -100,19 +104,16 @@ router.put(
       }
       // Update if question set exists
       if (userQuestionSetNew) {
+        // If it exists then create
         userQuestionSetNew = await UserQuestionSet.findOneAndUpdate(
-          { userQuestionSetID: userQuestionSetID },
+          { userQuestionSetID: userQuestionSetNew.questionSetID },
           { $set: userQuestionSetFields },
           { new: true }
         );
         return res.json(questionSetNew);
-        // If does not exist return error
+        // If does not exist then create one
       } else {
-        return res
-          .status(400)
-          .send(
-            'Question ID does not exist. Please use POST method for creating new question sets.'
-          );
+        
       }
     } catch (err) {
       console.error(err.message);
