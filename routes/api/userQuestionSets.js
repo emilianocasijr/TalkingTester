@@ -62,17 +62,7 @@ router.post(
 // @access  Private
 router.put(
   '/',
-  [
-    auth,
-    [
-      check('questionSetID', 'Question Set ID required')
-        .not()
-        .isEmpty(),
-      check('user', 'User ID required')
-        .not()
-        .isEmpty(),
-    ],
-  ],
+  [auth, [check('questionSetID', 'Question Set ID required').not().isEmpty()]],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -84,8 +74,9 @@ router.put(
     // Build question set
     const userQuestionSetFields = {};
     if (data) {
+      console.log(data);
       userQuestionSetFields.data = data;
-      userQuestionSetFields.dateModified = Date.now;
+      userQuestionSetFields.dateModified = new Date();
     } else {
       // If no data received then reset data
       userQuestionSetFields.data = [];
@@ -94,26 +85,29 @@ router.put(
     try {
       let userQuestionSetNew = await UserQuestionSet.findOne({
         questionSetID: questionSetID,
-        user: user,
+        user: req.user.id,
       });
-      // Check if user owns the user question set
-      if (userQuestionSetNew.user != req.user.id) {
-        return res
-          .status(401)
-          .send('User does not have permission to edit question set.');
-      }
       // Update if question set exists
       if (userQuestionSetNew) {
         // If it exists then create
-        userQuestionSetNew = await UserQuestionSet.findOneAndUpdate(
-          { userQuestionSetID: userQuestionSetNew.questionSetID },
-          { $set: userQuestionSetFields },
-          { new: true }
-        );
-        return res.json(questionSetNew);
+        console.log(userQuestionSetFields);
+        try {
+          userQuestionSetNew = await UserQuestionSet.findOneAndUpdate(
+            { userQuestionSetID: userQuestionSetNew.userQuestionSetID },
+            { $set: userQuestionSetFields },
+            { new: true }
+          ).then((res) => {
+            console.log('successfully updated');
+            console.log(res);
+          });
+          return res.json(userQuestionSetNew);
+        } catch (error) {
+          console.log(error);
+        }
+
         // If does not exist then create one
       } else {
-        
+        console.log('user question set does not exist');
       }
     } catch (err) {
       console.error(err.message);
@@ -125,10 +119,11 @@ router.put(
 // @route   GET api/userQuestionSets/:user_question_set_id
 // @desc    Get user question set with passed ID
 // @access  Private
-router.get('/:user_question_set_id', auth, async (req, res) => {
+router.get('/:questionSetID', auth, async (req, res) => {
   try {
     const userQuestionSet = await UserQuestionSet.findOne({
-      userQuestionSetID: req.params.user_question_set_id,
+      questionSetID: req.params.questionSetID,
+      user: req.user.id,
     });
     if (!userQuestionSet) {
       return res.status(400).json({ msg: 'Question Set not found' });
@@ -137,7 +132,7 @@ router.get('/:user_question_set_id', auth, async (req, res) => {
         .status(401)
         .json({ msg: 'User does not own this user question set' });
     }
-    res.json(questionSet);
+    res.json(userQuestionSet);
   } catch (err) {
     console.error(err.message);
     if (err.kind == 'ObjectId') {
